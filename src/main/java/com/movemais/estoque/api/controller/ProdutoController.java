@@ -2,6 +2,7 @@ package com.movemais.estoque.api.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,6 +24,7 @@ public class ProdutoController {
         this.cadastrarProdutoUseCase = cadastrarProdutoUseCase;
     }
 
+    @PostMapping
     public ResponseEntity<Produto> cadastrar(@RequestBody @Valid ProdutoRequest request) {
         Produto produto = cadastrarProdutoUseCase.executar(
             request.sku(),

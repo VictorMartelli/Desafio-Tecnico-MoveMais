@@ -29,7 +29,7 @@ public class JpaProdutoRepositoryAdapter implements ProdutoRepository {
 
     @Override
     public Optional<Produto> buscarPorSku(Sku sku) {
-        return repository.findBySku(sku.value()).map(this::toDomain);
+        return repository.findBySku(sku.getValor()).map(this::toDomain);
     }
 
     @Override
@@ -47,13 +47,13 @@ public class JpaProdutoRepositoryAdapter implements ProdutoRepository {
 
     @Override
     public boolean existePorSku(Sku sku) {
-        return repository.existsBySku(sku.value());
+        return repository.existsBySku(sku.getValor());
     }
 
     private ProdutoEntity toEntity(Produto p) {
         return new ProdutoEntity(
             null, // ID gerado pelo banco
-            p.getSku().value(), 
+            p.getSku().getValor(), 
             p.getNome(), 
             null, 
             p.getEstoqueMinimo(), 
