@@ -12,17 +12,19 @@ public class Produto implements Serializable {
     private Long id;
     private Sku sku;
     private String nome;
+    private String descricao;
     private Integer estoqueMinimo;
     private Integer saldo;
     private boolean ativo;
 
     // Construtor principal para criação de novos produtos
-    public Produto(Sku sku, String nome, Integer estoqueMinimo) {
+    public Produto(Sku sku, String nome, String descricao, Integer estoqueMinimo) {
         validarCampos(sku, nome, estoqueMinimo);
         this.sku = sku;
         this.nome = nome;
+        this.descricao = descricao; // NOVO
         this.estoqueMinimo = estoqueMinimo;
-        this.saldo = 0; // Todo produto começa com saldo zerado
+        this.saldo = 0;
         this.ativo = true;
     }
 
@@ -97,4 +99,12 @@ public class Produto implements Serializable {
     }
 
     public boolean isAtivo() { return ativo; }
+
+    public String getDescricao() {
+        return descricao;
+    }
+
+    public void setDescricao(String descricao) {
+        this.descricao = descricao;
+    }
 }

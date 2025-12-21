@@ -21,25 +21,34 @@ public class RegistrarMovimentacaoUseCase {
     }
 
     @Transactional
-    public void executar(Long produtoId, Integer quantidade, String tipo) {
-        // 1. Busca o produto e valida existência
+    public void executar(Long produtoId, Integer quantidade, String tipo, String origem) {
+        // 1. Busca el producto y valida su existencia
         Produto produto = produtoRepository.buscarPorId(produtoId)
-                .orElseThrow(() -> new RuntimeException("Produto não encontrado ID: " + produtoId));
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado con ID: " + produtoId));
 
-        // 2. Aplica a regra de negócio no domínio (Entrada ou Saída)
-        if ("ENTRADA".equalsIgnoreCase(tipo)) {
+        // 2. Lógica de Negocio Expandida:
+        // Entradas y Ajustes Positivos suman al saldo
+        if ("ENTRADA".equalsIgnoreCase(tipo) || "AJUSTE_POSITIVO".equalsIgnoreCase(tipo)) {
             produto.adicionarEstoque(quantidade);
-        } else if ("SAIDA".equalsIgnoreCase(tipo)) {
+        } 
+        // Salidas y Ajustes Negativos restan del saldo (con validación de saldo insuficiente)
+        else if ("SAIDA".equalsIgnoreCase(tipo) || "AJUSTE_NEGATIVO".equalsIgnoreCase(tipo)) {
             produto.removerEstoque(quantidade);
         } else {
-            throw new IllegalArgumentException("Tipo de movimentação inválido: " + tipo);
+            throw new IllegalArgumentException("Tipo de movimiento inválido: " + tipo);
         }
 
-        // 3. Salva a alteração do saldo no produto
+        // 3. Guarda la actualización del saldo del producto
         produtoRepository.salvar(produto);
 
-        // 4. NOVO: Salva o registro no histórico de movimentações
-        MovimentacaoEntity historico = new MovimentacaoEntity(produtoId, quantidade, tipo.toUpperCase());
+        // 4. Guarda el registro en el historial con el nuevo campo 'origem'
+        MovimentacaoEntity historico = new MovimentacaoEntity(
+            produtoId, 
+            quantidade, 
+            tipo.toUpperCase(), 
+            origem.toUpperCase()
+        );
+        
         movimentacaoRepository.save(historico);
     }
 }

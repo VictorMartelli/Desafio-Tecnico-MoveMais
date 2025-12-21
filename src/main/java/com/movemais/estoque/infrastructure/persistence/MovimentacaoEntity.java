@@ -23,16 +23,22 @@ public class MovimentacaoEntity {
     private Integer quantidade;
 
     @Column(nullable = false)
-    private String tipo; // "ENTRADA" ou "SAIDA"
+    private String tipo; // ENTRADA, SAIDA, AJUSTE_POSITIVO, AJUSTE_NEGATIVO
 
-    @Column(name = "data_ora", nullable = false)
+    @Column(nullable = false)
+    private String origem; // COMPRAS, VENDA, AJUSTE_MANUAL
+
+    @Column(name = "data_hora", nullable = false)
     private LocalDateTime dataHora;
 
-    // Construtor auxiliar para facilitar a criação no Adapter
-    public MovimentacaoEntity(Long produtoId, Integer quantidade, String tipo) {
+    /**
+     * Construtor auxiliar atualizado para suportar o campo origem
+     */
+    public MovimentacaoEntity(Long produtoId, Integer quantidade, String tipo, String origem) {
         this.produtoId = produtoId;
         this.quantidade = quantidade;
         this.tipo = tipo;
+        this.origem = origem;
         this.dataHora = LocalDateTime.now();
     }
 }

@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/produtos") // A base agora é produtos
+@RequestMapping("/api/produtos")
 public class MovimentacaoController {
 
     private final RegistrarMovimentacaoUseCase registrarMovimentacaoUseCase;
@@ -24,23 +24,36 @@ public class MovimentacaoController {
         this.listarMovimentacoesUseCase = listarMovimentacoesUseCase;
     }
 
-    // POST: /api/produtos/{id}/movimentacoes
+    /**
+     * POST /api/produtos/{id}/movimentacoes
+     * Registra uma entrada, saída ou ajuste de estoque.
+     */
     @PostMapping("/{id}/movimentacoes")
     public ResponseEntity<Object> registrar(
             @PathVariable Long id, 
             @RequestBody @Valid MovimentacaoRequest request) {
         try {
-            // Usamos o id que vem do path da URL
-            registrarMovimentacaoUseCase.executar(id, request.quantidade(), request.tipo());
+            // Agora passamos o campo 'origem' vindo do DTO
+            registrarMovimentacaoUseCase.executar(
+                id, 
+                request.quantidade(), 
+                request.tipo(), 
+                request.origem() 
+            );
             return ResponseEntity.ok("Movimentação realizada com sucesso!");
         } catch (IllegalStateException e) {
+            // Captura erros de saldo insuficiente
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (RuntimeException e) {
+            // Captura erros de produto não encontrado
             return ResponseEntity.status(404).body(e.getMessage());
         }
     }
 
-    // GET: /api/produtos/{id}/movimentacoes
+    /**
+     * GET /api/produtos/{id}/movimentacoes
+     * Retorna o histórico completo de movimentações do produto.
+     */
     @GetMapping("/{id}/movimentacoes")
     public ResponseEntity<List<MovimentacaoEntity>> listar(@PathVariable Long id) {
         List<MovimentacaoEntity> historico = listarMovimentacoesUseCase.executar(id);

@@ -1,20 +1,13 @@
 package com.movemais.estoque.infrastructure.persistence;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
-/**
- * Entidade de Infraestrutura (JPA) para persistência no banco de dados.
- * Esta classe é um "espelho" da tabela no H2 e não deve conter lógica de negócio.
- */
 @Entity
 @Table(name = "produtos")
-@Getter
-@Setter
-@NoArgsConstructor
+@Getter 
+@Setter 
+@NoArgsConstructor 
 @AllArgsConstructor
 public class ProdutoEntity {
 
@@ -28,26 +21,24 @@ public class ProdutoEntity {
     @Column(nullable = false)
     private String nome;
 
-    private Double preco; // Campo opcional para futuras expansões
+    private String descricao; 
 
     @Column(name = "estoque_minimo")
     private Integer estoqueMinimo;
 
-    @Column(nullable = false)
-    private Integer saldo = 0; // Inicializado com zero no banco de dados
+    private Integer saldo;
 
-    private boolean ativo = true;
+    private boolean ativo;
 
     /**
-     * Construtor auxiliar para facilitar o mapeamento no Adapter.
+     * Construtor auxiliar para facilitar a conversão do Domínio para a Entidade
      */
-    public ProdutoEntity(Long id, String sku, String nome, Double preco, Integer estoqueMinimo, boolean ativo, Integer saldo) {
-        this.id = id;
+    public ProdutoEntity(String sku, String nome, String descricao, Integer estoqueMinimo, Integer saldo, boolean ativo) {
         this.sku = sku;
         this.nome = nome;
-        this.preco = preco;
+        this.descricao = descricao;
         this.estoqueMinimo = estoqueMinimo;
+        this.saldo = saldo;
         this.ativo = ativo;
-        this.saldo = saldo != null ? saldo : 0;
     }
 }

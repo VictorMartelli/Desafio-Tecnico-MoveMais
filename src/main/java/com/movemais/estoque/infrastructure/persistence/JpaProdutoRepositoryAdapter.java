@@ -5,9 +5,8 @@ import com.movemais.estoque.domain.repository.ProdutoRepository;
 import com.movemais.estoque.domain.valueobjects.Sku;
 import org.springframework.stereotype.Component;
 
-import java.util.Optional;
 import java.util.List;
-import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
@@ -19,22 +18,26 @@ public class JpaProdutoRepositoryAdapter implements ProdutoRepository {
         this.repository = repository;
     }
 
-    @SuppressWarnings("null")
     @Override
     public Produto salvar(Produto produto) {
         ProdutoEntity entity = toEntity(produto);
-        ProdutoEntity saved = repository.save(entity);
-        return toDomain(saved);
-    }
-
-    @Override
-    public Optional<Produto> buscarPorSku(Sku sku) {
-        return repository.findBySku(sku.getValor()).map(this::toDomain);
+        // O salvamento retorna a entidade persistida, garantindo o ID gerado
+        @SuppressWarnings("null")
+        ProdutoEntity savedEntity = repository.save(entity);
+        return toDomain(savedEntity);
     }
 
     @Override
     public Optional<Produto> buscarPorId(Long id) {
-        return repository.findById(Objects.requireNonNull(id)).map(this::toDomain);
+        if (id == null) return Optional.empty();
+        // O uso do .map() lida com o Optional de forma segura para o compilador
+        return repository.findById(id).map(this::toDomain);
+    }
+
+    @Override
+    public Optional<Produto> buscarPorSku(Sku sku) {
+        if (sku == null || sku.getValor() == null) return Optional.empty();
+        return repository.findBySku(sku.getValor()).map(this::toDomain);
     }
 
     @Override
@@ -46,53 +49,56 @@ public class JpaProdutoRepositoryAdapter implements ProdutoRepository {
 
     @Override
     public List<Produto> listarPorStatus(boolean ativo) {
-        return repository.findByAtivo(ativo).stream()
+        return repository.findAll().stream()
+                .filter(p -> p.isAtivo() == ativo)
                 .map(this::toDomain)
                 .collect(Collectors.toList());
     }
 
     @Override
     public boolean existePorSku(Sku sku) {
-        return repository.existsBySku(sku.getValor());
+        if (sku == null || sku.getValor() == null) return false;
+        return repository.findBySku(sku.getValor()).isPresent();
     }
 
     /**
-     * Converte o objeto de Domínio para a Entidade JPA.
-     * Importante: Passamos o saldo para garantir que ele seja persistido.
+     * Converte o Domínio para Entidade JPA.
+     * Resolve os erros de construtor indefinido.
      */
-    private ProdutoEntity toEntity(Produto p) {
+    private ProdutoEntity toEntity(Produto domain) {
         return new ProdutoEntity(
-            p.getId(),
-            p.getSku().getValor(),
-            p.getNome(),
-            null, // Preço (pode ser expandido futuramente)
-            p.getEstoqueMinimo(),
-            p.isAtivo(),
-            p.getSaldo() // MAPEADO: Saldo do domínio indo para o banco
+            domain.getId(),
+            domain.getSku().getValor(),
+            domain.getNome(),
+            domain.getDescricao(), 
+            domain.getEstoqueMinimo(),
+            domain.getSaldo(),
+            domain.isAtivo()
         );
     }
 
     /**
-     * Converte a Entidade JPA para o objeto de Domínio.
-     * Importante: Reconstruímos o estado do Produto com o ID e Saldo vindos do banco.
+     * Converte a Entidade JPA para Domínio.
+     * Reconstrói o objeto com a nova estrutura de dados.
      */
-    private Produto toDomain(ProdutoEntity e) {
+    private Produto toDomain(ProdutoEntity entity) {
+        // Blindagem contra entidade nula na conversão
+        if (entity == null) throw new IllegalArgumentException("Entidade não pode ser nula");
+
         Produto produto = new Produto(
-            new Sku(Objects.requireNonNull(e.getSku())),
-            Objects.requireNonNull(e.getNome()),
-            e.getEstoqueMinimo()
+            new Sku(entity.getSku()), 
+            entity.getNome(), 
+            entity.getDescricao(), 
+            entity.getEstoqueMinimo()
         );
-
-        // MAPEADO: ID e Saldo do banco voltando para o domínio
-        produto.setId(e.getId());
-        produto.setSaldo(e.getSaldo()); 
-
-        if (e.isAtivo()) {
-            produto.ativar();
-        } else {
+        
+        produto.setId(entity.getId());
+        produto.setSaldo(entity.getSaldo());
+        
+        if (!entity.isAtivo()) {
             produto.inativar();
         }
-
+        
         return produto;
     }
 }
