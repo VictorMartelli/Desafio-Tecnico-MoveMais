@@ -13,11 +13,21 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable()) // Desabilita CSRF para permitir o POST do Insomnia
+            // 1. Desabilita o CSRF para permitir que o Insomnia envie POST/PUT
+            .csrf(csrf -> csrf.disable()) 
+            
+            // 2. Configura as regras de autorização
             .authorizeHttpRequests(auth -> auth
-                .anyRequest().permitAll() // Permite todas as requisições em ambiente de dev
+                // Libera todos os endpoints que começam com /api/
+                .requestMatchers("/api/**").permitAll() 
+                // Libera o console do banco de dados H2
+                .requestMatchers("/h2-console/**").permitAll()
+                // Qualquer outra requisição deve ser permitida (ambiente de dev)
+                .anyRequest().permitAll()
             )
-            .headers(headers -> headers.frameOptions(frame -> frame.disable())); // Necessário para acessar o console do H2
+            
+            // 3. Necessário para o console do H2 abrir corretamente no navegador
+            .headers(headers -> headers.frameOptions(frame -> frame.disable()));
         
         return http.build();
     }
