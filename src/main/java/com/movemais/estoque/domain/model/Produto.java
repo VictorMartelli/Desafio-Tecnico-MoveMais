@@ -5,7 +5,7 @@ import java.io.Serializable;
 
 /**
  * Entidade de Domínio representando um Produto.
- * Contém as regras de negócio essenciais e protege a integridade dos dados.
+ * Contém a lógica de negócio e garante que o saldo nunca fique negativo.
  */
 public class Produto implements Serializable {
     
@@ -16,18 +16,18 @@ public class Produto implements Serializable {
     private Integer saldo;
     private boolean ativo;
 
-    // Construtor principal para criação de novos produtos (Cadastro)
+    // Construtor principal para criação de novos produtos
     public Produto(Sku sku, String nome, Integer estoqueMinimo) {
         validarCampos(sku, nome, estoqueMinimo);
         this.sku = sku;
         this.nome = nome;
         this.estoqueMinimo = estoqueMinimo;
-        this.saldo = 0; // Inicializa sempre com estoque zerado
-        this.ativo = true; // Por padrão, o produto nasce ativo
+        this.saldo = 0; // Todo produto começa com saldo zerado
+        this.ativo = true;
     }
 
     /**
-     * Valida as invariantes do domínio para impedir a criação de objetos inconsistentes.
+     * Validações básicas de integridade do objeto.
      */
     private void validarCampos(Sku sku, String nome, Integer estoqueMinimo) {
         if (sku == null) throw new IllegalArgumentException("SKU é obrigatório.");
@@ -37,7 +37,36 @@ public class Produto implements Serializable {
         }
     }
 
-    // --- Métodos de Comportamento (Regras de Negócio) ---
+    // --- Regras de Negócio (Movimentação) ---
+
+    /**
+     * Adiciona quantidade ao saldo atual.
+     */
+    public void adicionarEstoque(Integer quantidade) {
+        if (quantidade == null || quantidade <= 0) {
+            throw new IllegalArgumentException("A quantidade de entrada deve ser maior que zero.");
+        }
+        this.saldo += quantidade;
+    }
+
+    /**
+     * Remove quantidade do saldo atual.
+     * REGRA: Impede que o saldo fique negativo lançando uma exceção de negócio.
+     */
+    public void removerEstoque(Integer quantidade) {
+        if (quantidade == null || quantidade <= 0) {
+            throw new IllegalArgumentException("A quantidade de saída deve ser maior que zero.");
+        }
+        
+        if (this.saldo < quantidade) {
+            // Esta é a exceção que o Controller deve capturar para retornar 400 Bad Request
+            throw new IllegalStateException("Saldo insuficiente! Operação negada. Saldo atual: " + this.saldo);
+        }
+        
+        this.saldo -= quantidade;
+    }
+
+    // --- Métodos de Estado ---
 
     public void ativar() {
         this.ativo = true;
@@ -47,32 +76,7 @@ public class Produto implements Serializable {
         this.ativo = false;
     }
 
-    /**
-     * Incrementa o saldo atual do produto.
-     * @param quantidade Valor a ser adicionado.
-     */
-    public void adicionarEstoque(Integer quantidade) {
-        if (quantidade == null || quantidade <= 0) {
-            throw new IllegalArgumentException("A quantidade para entrada deve ser positiva.");
-        }
-        this.saldo += quantidade;
-    }
-
-    /**
-     * Decrementa o saldo atual do produto.
-     * @param quantidade Valor a ser removido.
-     */
-    public void removerEstoque(Integer quantidade) {
-        if (quantidade == null || quantidade <= 0) {
-            throw new IllegalArgumentException("A quantidade para saída deve ser positiva.");
-        }
-        if (this.saldo < quantidade) {
-            throw new IllegalStateException("Saldo insuficiente para realizar a saída.");
-        }
-        this.saldo -= quantidade;
-    }
-
-    // --- Getters e Setters Técnicos (Uso exclusivo do Repository/Adapter) ---
+    // --- Getters e Setters Técnicos (Uso para Persistência/Adapter) ---
 
     public Long getId() { return id; }
     
