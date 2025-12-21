@@ -46,7 +46,6 @@ public class JpaProdutoRepositoryAdapter implements ProdutoRepository {
 
     @Override
     public List<Produto> listarPorStatus(boolean ativo) {
-        // IMPLEMENTADO: Chama o Spring Data e converte para domínio
         return repository.findByAtivo(ativo).stream()
                 .map(this::toDomain)
                 .collect(Collectors.toList());
@@ -57,27 +56,37 @@ public class JpaProdutoRepositoryAdapter implements ProdutoRepository {
         return repository.existsBySku(sku.getValor());
     }
 
+    /**
+     * Converte o objeto de Domínio para a Entidade JPA.
+     * Importante: Passamos o saldo para garantir que ele seja persistido.
+     */
     private ProdutoEntity toEntity(Produto p) {
         return new ProdutoEntity(
-            p.getId(), // Alterado: Passa o ID do domínio para a Entity (evita duplicidade)
-            p.getSku().getValor(), 
-            p.getNome(), 
-            null, 
-            p.getEstoqueMinimo(), 
-            p.isAtivo()
+            p.getId(),
+            p.getSku().getValor(),
+            p.getNome(),
+            null, // Preço (pode ser expandido futuramente)
+            p.getEstoqueMinimo(),
+            p.isAtivo(),
+            p.getSaldo() // MAPEADO: Saldo do domínio indo para o banco
         );
     }
 
+    /**
+     * Converte a Entidade JPA para o objeto de Domínio.
+     * Importante: Reconstruímos o estado do Produto com o ID e Saldo vindos do banco.
+     */
     private Produto toDomain(ProdutoEntity e) {
-        // Criamos a instância de domínio
         Produto produto = new Produto(
-            new Sku(Objects.requireNonNull(e.getSku())), 
-            Objects.requireNonNull(e.getNome()), 
+            new Sku(Objects.requireNonNull(e.getSku())),
+            Objects.requireNonNull(e.getNome()),
             e.getEstoqueMinimo()
         );
 
-        // IMPORTANTE: Reatribuímos o ID e o status Ativo vindo do Banco
+        // MAPEADO: ID e Saldo do banco voltando para o domínio
         produto.setId(e.getId());
+        produto.setSaldo(e.getSaldo()); 
+
         if (e.isAtivo()) {
             produto.ativar();
         } else {
