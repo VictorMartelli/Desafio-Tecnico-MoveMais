@@ -34,7 +34,6 @@ public class JpaProdutoRepositoryAdapter implements ProdutoRepository {
 
     @Override
     public Optional<Produto> buscarPorId(Long id) {
-        // Tratar o id como não nulo antes da busca
         return repository.findById(Objects.requireNonNull(id)).map(this::toDomain);
     }
 
@@ -46,13 +45,21 @@ public class JpaProdutoRepositoryAdapter implements ProdutoRepository {
     }
 
     @Override
+    public List<Produto> listarPorStatus(boolean ativo) {
+        // IMPLEMENTADO: Chama o Spring Data e converte para domínio
+        return repository.findByAtivo(ativo).stream()
+                .map(this::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public boolean existePorSku(Sku sku) {
         return repository.existsBySku(sku.getValor());
     }
 
     private ProdutoEntity toEntity(Produto p) {
         return new ProdutoEntity(
-            null, // ID gerado pelo banco
+            p.getId(), // Alterado: Passa o ID do domínio para a Entity (evita duplicidade)
             p.getSku().getValor(), 
             p.getNome(), 
             null, 
@@ -62,11 +69,21 @@ public class JpaProdutoRepositoryAdapter implements ProdutoRepository {
     }
 
     private Produto toDomain(ProdutoEntity e) {
-        // requireNonNull nos campos obrigatórios vindos da Entity
-        return new Produto(
+        // Criamos a instância de domínio
+        Produto produto = new Produto(
             new Sku(Objects.requireNonNull(e.getSku())), 
             Objects.requireNonNull(e.getNome()), 
             e.getEstoqueMinimo()
         );
+
+        // IMPORTANTE: Reatribuímos o ID e o status Ativo vindo do Banco
+        produto.setId(e.getId());
+        if (e.isAtivo()) {
+            produto.ativar();
+        } else {
+            produto.inativar();
+        }
+
+        return produto;
     }
 }

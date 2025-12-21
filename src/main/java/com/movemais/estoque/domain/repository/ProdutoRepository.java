@@ -14,6 +14,8 @@ public interface ProdutoRepository {
     Optional<Produto> buscarPorSku(Sku sku);
     Optional<Produto> buscarPorId(Long id);
     List<Produto> listarTodos();
+    // Novo método para suportar o filtro por status ativo/inativo
+    List<Produto> listarPorStatus(boolean ativo);
     boolean existePorSku(Sku sku);
 }
 
