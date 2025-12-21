@@ -17,12 +17,20 @@ public class Produto implements Serializable {
     private Integer saldo;
     private boolean ativo;
 
-    // Construtor principal para criação de novos produtos
+    /**
+     * Construtor padrão necessário para frameworks de serialização (Jackson/JSON).
+     */
+    public Produto() {
+    }
+
+    /**
+     * Construtor principal para criação de novos produtos via Use Cases.
+     */
     public Produto(Sku sku, String nome, String descricao, Integer estoqueMinimo) {
         validarCampos(sku, nome, estoqueMinimo);
         this.sku = sku;
         this.nome = nome;
-        this.descricao = descricao; // NOVO
+        this.descricao = descricao;
         this.estoqueMinimo = estoqueMinimo;
         this.saldo = 0;
         this.ativo = true;
@@ -61,37 +69,37 @@ public class Produto implements Serializable {
         }
         
         if (this.saldo < quantidade) {
-            // Esta é a exceção que o Controller deve capturar para retornar 400 Bad Request
             throw new IllegalStateException("Saldo insuficiente! Operação negada. Saldo atual: " + this.saldo);
         }
         
         this.saldo -= quantidade;
     }
 
-    // --- Métodos de Estado ---
-
-    public void ativar() {
-        this.ativo = true;
+    /**
+     * Verifica se o produto está abaixo do estoque de segurança.
+     */
+    public boolean estaAbaixoDoMinimo() {
+        return this.saldo < this.estoqueMinimo;
     }
 
-    public void inativar() {
-        this.ativo = false;
-    }
-
-    // --- Getters e Setters Técnicos (Uso para Persistência/Adapter) ---
+    // --- Getters e Setters ---
 
     public Long getId() { return id; }
-    
     public void setId(Long id) { this.id = id; }
 
     public Sku getSku() { return sku; }
+    public void setSku(Sku sku) { this.sku = sku; }
 
     public String getNome() { return nome; }
+    public void setNome(String nome) { this.nome = nome; }
+
+    public String getDescricao() { return descricao; }
+    public void setDescricao(String descricao) { this.descricao = descricao; }
 
     public Integer getEstoqueMinimo() { return estoqueMinimo; }
+    public void setEstoqueMinimo(Integer estoqueMinimo) { this.estoqueMinimo = estoqueMinimo; }
 
     public Integer getSaldo() { return saldo; }
-
     public void setSaldo(Integer saldo) { 
         if (saldo != null && saldo >= 0) {
             this.saldo = saldo; 
@@ -99,12 +107,13 @@ public class Produto implements Serializable {
     }
 
     public boolean isAtivo() { return ativo; }
+    public void setAtivo(boolean ativo) { this.ativo = ativo; }
 
-    public String getDescricao() {
-        return descricao;
+    public void ativar() {
+        this.ativo = true;
     }
 
-    public void setDescricao(String descricao) {
-        this.descricao = descricao;
+    public void inativar() {
+        this.ativo = false;
     }
 }

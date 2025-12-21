@@ -21,6 +21,7 @@ public class ProdutoEntity {
     @Column(nullable = false)
     private String nome;
 
+    // Garanta que este campo existe aqui para o Hibernate criar a coluna no H2
     private String descricao; 
 
     @Column(name = "estoque_minimo")
@@ -31,7 +32,7 @@ public class ProdutoEntity {
     private boolean ativo;
 
     /**
-     * Construtor auxiliar para facilitar a conversão do Domínio para a Entidade
+     * Construtor auxiliar atualizado para incluir a descrição.
      */
     public ProdutoEntity(String sku, String nome, String descricao, Integer estoqueMinimo, Integer saldo, boolean ativo) {
         this.sku = sku;

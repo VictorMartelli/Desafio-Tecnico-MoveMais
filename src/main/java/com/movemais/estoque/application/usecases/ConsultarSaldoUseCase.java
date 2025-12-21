@@ -13,9 +13,14 @@ public class ConsultarSaldoUseCase {
         this.repository = repository;
     }
 
-    public Integer executar(Long id) {
-        return repository.buscarPorId(id)
-                .map(Produto::getSaldo) // Assume que vamos adicionar o campo saldo no Produto
-                .orElseThrow(() -> new RuntimeException("Produto não encontrado com o ID: " + id));
+    /**
+     * Executa a consulta de saldo garantindo que o produto existe no domínio.
+     * @param produtoId ID do produto a ser consultado.
+     * @return O saldo atualizado conforme as regras de negócio.
+     */
+    public Integer executar(Long produtoId) {
+        return repository.buscarPorId(produtoId)
+                .map(Produto::getSaldo)
+                .orElseThrow(() -> new RuntimeException("Produto não encontrado com ID: " + produtoId));
     }
 }
