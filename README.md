@@ -88,6 +88,22 @@ O projeto utiliza **JUnit 5** para garantir a integridade das regras de negócio
 
 - **Teste Unitário de Domínio**: Validamos que a entidade `Produto` impede movimentações que resultariam em saldo negativo, lançando `IllegalStateException`.
 - **Execução dos Testes**:
+
   ```bash
   ./mvnw test
   ```
+
+## Evidências de Testes (API Execution)
+
+Abaixo estão os registros das execuções realizadas via Insomnia para validar as regras de negócio e os fluxos da API.
+
+| Cenário de Teste              | Ação                                    | Status Esperado | Link da Evidência                                                     |
+| :---------------------------- | :-------------------------------------- | :-------------- | :-------------------------------------------------------------------- |
+| **Cadastro de Produto**       | Criar novo produto com sucesso          | `201 Created`   | [Visualizar](./docs/screenshots/POST-Criar-Produto.png)               |
+| **Consulta de Saldo Inicial** | Verificar saldo após cadastro (zero)    | `200 OK`        | [Visualizar](./docs/screenshots/GET-Verificar-Saldo.png)              |
+| **Entrada de Estoque**        | Adicionar 100 unidades                  | `200 OK`        | [Visualizar](./docs/screenshots/POST-Adicionar-Saldo.png)             |
+| **Conferência de Entrada**    | Verificar se o saldo atualizou para 100 | `200 OK`        | [Visualizar](./docs/screenshots/GET-Verificar-Saldo-Adicionado.png)   |
+| **Saída de Estoque**          | Remover 30 unidades                     | `200 OK`        | [Visualizar](./docs/screenshots/POST-Remover-Saldo.png)               |
+| **Conferência de Saída**      | Verificar se o saldo atualizou para 70  | `200 OK`        | [Visualizar](./docs/screenshots/GET-Verificar-Saldo-Apos-Remocao.png) |
+| **Validação: SKU Único**      | Tentar cadastrar SKU já existente       | `403 Forbidden` | [Visualizar](./docs/screenshots/POST-SKU-Duplicado.png)               |
+| **Validação: Saldo Negativo** | Tentar remover mais do que o disponível | `403 Forbidden` | [Visualizar](./docs/screenshots/POST-Remocao-Negativa-Invalida.png)   |
