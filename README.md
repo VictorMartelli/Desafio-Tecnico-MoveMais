@@ -75,30 +75,6 @@ Para executar os testes unitários do projeto, utilize o seguinte comando na rai
 
 Este comando irá compilar o código de teste e executar todos os testes unitários da aplicação, garantindo que as regras de negócio e funcionalidades estão operando como esperado.
 
-## Integração com Sistemas (Pedidos e Fiscal)
-
-A beleza dos Adaptadores brilha aqui:
-
-- **Sistema de Pedidos**: Criaríamos um novo **Input Adapter** (ex: `PedidoListener`) que escuta novos pedidos e chama o seu `RegistrarMovimentacaoUseCase`.
-- **Sistema Fiscal**: Criaríamos um **Output Adapter** que, sempre que uma movimentação do tipo "VENDA" for salva com sucesso, envia os dados para a API do sistema fiscal.
-- **Independência**: Se o sistema fiscal mudar de tecnologia, você apenas troca o adaptador; o seu Use Case de movimentação continua intacto.
-
-## Múltiplos Depósitos (Escalabilidade de Domínio)
-
-Atualmente, o saldo é um campo simples na entidade `Produto`. Para suportar múltiplos depósitos:
-
-- **Nova Entidade**: Criaríamos a entidade `Deposito`.
-- **Relacionamento**: O `Produto` deixaria de ter um `saldo` global e passaria a ter uma lista de `EstoquePorDeposito`.
-- **Impacto no Domínio**: O método `removerEstoque` passaria a receber o `idDeposito`, garantindo que a trava de segurança (saldo insuficiente) funcione de forma isolada para cada local.
-
-## Múltiplos Depósitos (Escalabilidade de Domínio)
-
-Atualmente, o saldo é um campo simples na entidade `Produto`. Para suportar múltiplos depósitos:
-
-- **Nova Entidade**: Criaríamos a entidade `Deposito`.
-- **Relacionamento**: O `Produto` deixaria de ter um `saldo` global e passaria a ter uma lista de `EstoquePorDeposito`.
-- **Impacto no Domínio**: O método `removerEstoque` passaria a receber o `idDeposito`, garantindo que a trava de segurança (saldo insuficiente) funcione de forma isolada para cada local.
-
 ## Observabilidade e Monitoramento (Actuator)
 
 Implementação do **Spring Boot Actuator** para expor métricas vitais da aplicação:
