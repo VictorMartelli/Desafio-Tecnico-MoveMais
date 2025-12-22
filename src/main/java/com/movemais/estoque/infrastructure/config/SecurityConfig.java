@@ -2,10 +2,16 @@ package com.movemais.estoque.infrastructure.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 
+/**
+ * Configuração de Segurança Arquitetural.
+ * Preparada para autenticação Stateless (JWT) e Controle de Acesso por Camadas.
+ */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -13,20 +19,27 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            // 1. Desabilita o CSRF para permitir que o Insomnia envie POST/PUT
+            // 1. Desabilita CSRF: Essencial para APIs REST que não mantêm estado em cookies
             .csrf(csrf -> csrf.disable()) 
             
-            // 2. Configura as regras de autorização
+            // 2. Política de Sessão: Configurada como STATELESS (preparação para JWT/OAuth2)
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            
+            // 3. Regras de Autorização e Filtragem por Camadas
             .authorizeHttpRequests(auth -> auth
-                // Libera todos os endpoints que começam com /api/
-                .requestMatchers("/api/**").permitAll() 
-                // Libera o console do banco de dados H2
+                // Permite acesso ao Console do H2 (Desenvolvimento)
                 .requestMatchers("/h2-console/**").permitAll()
-                // Qualquer outra requisição deve ser permitida (ambiente de dev)
-                .anyRequest().permitAll()
+
+                // Exemplo de Filtragem por Verbos e Camadas (RBAC):
+                // No futuro, bastaria trocar .permitAll() por .hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/produtos/**").permitAll() 
+                .requestMatchers(HttpMethod.GET, "/api/produtos/**").permitAll()
+                
+                // Garante que qualquer outro endpoint não mapeado exija autenticação
+                .anyRequest().authenticated()
             )
             
-            // 3. Necessário para o console do H2 abrir corretamente no navegador
+            // 4. Configuração para Frames: Permite que o Console do H2 funcione em Iframes
             .headers(headers -> headers.frameOptions(frame -> frame.disable()));
         
         return http.build();
