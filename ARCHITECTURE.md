@@ -71,7 +71,15 @@ A integração com sistemas externos deve ser feita através de adaptadores na c
 
 Essa abordagem mantém o Domínio limpo e isolado das tecnologias de mensageria ou comunicação, que residem na camada de Infraestrutura.
 
-## 6. Diagrama de Contexto (C4 - Nível 1)
+## 6. Evolução Arquitetural: Padrão Mediator
+
+Para futuras expansões da aplicação, a estrutura atual foi projetada para suportar a implementação do padrão **Mediator**. Este padrão seria introduzido para gerenciar a complexidade crescente das orquestrações de negócio:
+
+- **Desacoplamento de Casos de Uso**: O Controller deixaria de chamar serviços diretamente, passando a disparar "Commands" para um mediador central (via _Spring ApplicationEvents_ ou _PipelinR_).
+- **Extensibilidade (Open/Closed Principle)**: Novas ações disparadas por uma movimentação de estoque — como o envio de e-mails para reposição ou integração com sistemas fiscais — poderiam ser adicionadas como novos _Handlers_, sem a necessidade de modificar o código de domínio já testado e validado.
+- **Simplificação dos Controllers**: A camada de exposição passaria a ter a única responsabilidade de postar comandos, tornando a manutenção e a testabilidade da infraestrutura ainda mais isoladas.
+
+## 7. Diagrama de Contexto (C4 - Nível 1)
 
 Este diagrama descreve o sistema de estoque no ecossistema da MoveMais e como o Operador interage com ele.
 
@@ -85,7 +93,7 @@ C4Context
     Rel(operator, inventory_system, "Realiza entradas, saídas e consultas", "HTTPS/JSON")
 ```
 
-## 7. Diagrama de Containers (C4 - Nível 2)
+## 8. Diagrama de Containers (C4 - Nível 2)
 
 O sistema é construído como um Monolito Modular seguindo Clean Architecture, garantindo desacoplamento entre a lógica de negócio e a infraestrutura.
 
