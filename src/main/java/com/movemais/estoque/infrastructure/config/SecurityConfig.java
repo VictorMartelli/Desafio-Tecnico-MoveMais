@@ -17,21 +17,15 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            // 1. Desabilita explicitamente o CSRF usando a nova sintaxe do Spring Boot 3
             .csrf(AbstractHttpConfigurer::disable)
-            
-            // 2. Configura a sessão como STATELESS (essencial para APIs e para evitar o 403)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            
-            // 3. Regras de Autorização
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(new AntPathRequestMatcher("/api/**")).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/h2-console/**")).permitAll()
-                .anyRequest().permitAll() // Temporariamente permite tudo para desbloquear seus testes
+                .requestMatchers(new AntPathRequestMatcher("/actuator/**")).permitAll()
+                .anyRequest().authenticated()
             )
-            
-            // 4. Necessário para o console do H2 abrir corretamente
-            .headers(headers -> headers.frameOptions(frame -> frame.disable()));
+            .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()));
         
         return http.build();
     }

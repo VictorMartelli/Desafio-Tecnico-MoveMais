@@ -98,3 +98,20 @@ Atualmente, o saldo é um campo simples na entidade `Produto`. Para suportar mú
 - **Nova Entidade**: Criaríamos a entidade `Deposito`.
 - **Relacionamento**: O `Produto` deixaria de ter um `saldo` global e passaria a ter uma lista de `EstoquePorDeposito`.
 - **Impacto no Domínio**: O método `removerEstoque` passaria a receber o `idDeposito`, garantindo que a trava de segurança (saldo insuficiente) funcione de forma isolada para cada local.
+
+## Observabilidade e Monitoramento (Actuator)
+
+Implementação do **Spring Boot Actuator** para expor métricas vitais da aplicação:
+
+- **Health Check**: Endpoint `/actuator/health` que valida a saúde da aplicação, do disco e a conectividade com o banco de dados H2.
+- **Métricas**: Base preparada para integração com ferramentas de telemetria (Prometheus/Grafana) via endpoint `/actuator/metrics`.
+
+## Qualidade de Software
+
+O projeto utiliza **JUnit 5** para garantir a integridade das regras de negócio:
+
+- **Teste Unitário de Domínio**: Validamos que a entidade `Produto` impede movimentações que resultariam em saldo negativo, lançando `IllegalStateException`.
+- **Execução dos Testes**:
+  ```bash
+  ./mvnw test
+  ```
